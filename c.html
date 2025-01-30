@@ -3,7 +3,7 @@ const {createApp} = Vue;
 createApp({
     data() {
         return {
-            alumnos: '',
+            alumnos: [],
             codigo: '',
             nombre: '',
             direccion: '',
@@ -13,7 +13,7 @@ createApp({
     },
     methods: {
         eliminarAlumno(alumno) {
-            if (confirm('¿Estas seguro de eliminar el alumno $(alumno.nombre)?')){
+            if (confirm(`¿Esta seguro de eliminar el alumno ${alumno.nombre}?`)){
                 localStorage.removeItem(alumno.codigo);
                 this.listarAlumnos();
             }
@@ -32,7 +32,6 @@ createApp({
                 direccion: this.direccion,
                 telefono: this.telefono,
                 email: this.email
-
             };
             localStorage.setItem(this.codigo, JSON.stringify(alumno));
             this.listarAlumnos();
@@ -47,9 +46,6 @@ createApp({
         }
     },
     created() {
-       this.listarAlumnos();
+        this.listarAlumnos();
     }
 }).mount('#app');
-
-//Agregar los datos de Municipio, Departamento, Distrito, Fecha de Nacimiento, Sexo. 
-//Agregar una busqueda. 
