@@ -8,7 +8,7 @@
             idMateria: '',
             codigo: '',
             nombre: '',
-            uv: '',
+            uv: ''
         }
     },
     methods: {
