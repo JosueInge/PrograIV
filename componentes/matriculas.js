@@ -79,7 +79,12 @@ const matricula = {
                             <div class="row p-1">
                                 <div class="col-3 col-md-3">Periodo</div>
                                 <div class="col-9 col-md-6">
-                                    <input v-model="periodo" type="text" class="form-control" required>
+                                    <select v-model="periodo" name="txtperiodo" id="txtperiodo" class="form-control">
+                                    <option value="">Seleccione un periodo</option>    
+                                    <option value="ciclo_I_2025">ciclo_I_2025</option>
+                                    <option value="ciclo_II_2025">ciclo_II_2025</option>
+                                    <option value="ciclo_I_2026">ciclo_I_2026</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
