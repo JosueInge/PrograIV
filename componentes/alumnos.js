@@ -1,15 +1,16 @@
-    
- const alumno = {
+const alumno = {
     props: ['forms'],
     data() {
         return {
             accion: 'nuevo',
-            idAlumno: '',
-            codigo: '',
-            nombre: '',
-            direccion: '',
-            telefono: '',
-            email: ''
+            alumno: {
+                codigo: '',
+                nombre: '',
+                direccion: '',
+                telefono: '',
+                email: '',
+                codigo_transaccion: uuidv4()
+            },
         }
     },
     methods: {
@@ -19,36 +20,104 @@
         },
         modificarAlumno(alumno) {
             this.accion = 'modificar';
-            this.idAlumno = alumno.idAlumno;
-            this.codigo = alumno.codigo;
-            this.nombre = alumno.nombre;
-            this.direccion = alumno.direccion;
-            this.telefono = alumno.telefono;
-            this.email = alumno.email;
+            this.alumno = { ...alumno };
         },
         guardarAlumno() {
-            let alumno = {
-                codigo: this.codigo,
-                nombre: this.nombre,
-                direccion: this.direccion,
-                telefono: this.telefono,
-                email: this.email
-            };
-            if (this.accion == 'modificar') {
-                alumno.idAlumno = this.idAlumno;
+            let alumno = { ...this.alumno };
+
+            if (!navigator.onLine) {
+                db.alumnos.put(alumno)
+                    .then(() => {
+                        this.guardarEnPendientes(alumno);
+                        alertify.warning("No hay internet. Los datos se guardaron localmente.");
+                        this.nuevoAlumno();
+                    })
+                    .catch(error => console.error("Error al guardar en IndexedDB:", error));
+                return;
             }
+
             db.alumnos.put(alumno);
-            this.nuevoAlumno();
+            fetch(`private/modulos/alumnos/alumno.php?accion=${this.accion}&alumnos=${JSON.stringify(alumno)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== true) {
+                        alertify.error(data);
+                    } else {
+                        this.nuevoAlumno();
+                        this.$emit('buscar');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al enviar a la nube:", error);
+                    this.guardarEnPendientes(alumno);
+                    alertify.warning("Error en la conexión. Datos guardados localmente.");
+                    this.nuevoAlumno();
+                });
         },
+
+        guardarEnPendientes(alumno) {
+            let pendientes = JSON.parse(localStorage.getItem('pendientes')) || [];
+            let existe = pendientes.some(p => p.codigo_transaccion === alumno.codigo_transaccion);
+            
+            if (!existe) {
+                pendientes.push(alumno);
+                localStorage.setItem('pendientes', JSON.stringify(pendientes));
+                console.log("Alumno guardado en pendientes:", alumno);
+            }
+        },
+
+        sincronizarPendientes() {
+            let pendientes = JSON.parse(localStorage.getItem('pendientes')) || [];
+            if (pendientes.length === 0) return;
+
+            console.log("Intentando sincronizar datos pendientes...");
+
+            let index = 0;
+            const procesarPendiente = () => {
+                if (index >= pendientes.length) return;
+
+                let alumno = pendientes[index];
+
+                fetch(`private/modulos/alumnos/alumno.php?accion=nuevo&alumnos=${JSON.stringify(alumno)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data === true) {
+                            console.log("Alumno sincronizado con éxito:", alumno);
+                            pendientes.splice(index, 1);
+                            localStorage.setItem('pendientes', JSON.stringify(pendientes));
+                        } else {
+                            console.error("Error en sincronización:", data);
+                            index++;
+                        }
+                        procesarPendiente(); 
+                    })
+                    .catch(error => {
+                        console.error("Error al sincronizar:", error);
+                        index++;
+                        procesarPendiente();
+                    });
+            };
+
+            procesarPendiente();
+        },
+
         nuevoAlumno() {
             this.accion = 'nuevo';
-            this.idAlumno = '';
-            this.codigo = '';
-            this.nombre = '';
-            this.direccion = '';
-            this.telefono = '';
-            this.email = '';
+            this.alumno = {
+                codigo: '',
+                nombre: '',
+                direccion: '',
+                telefono: '',
+                email: '',
+                codigo_transaccion: uuidv4()
+            };
         }
+    },
+    mounted() {
+        window.addEventListener("online", this.sincronizarPendientes);
+    },
+    beforeUnmount() {
+        window.removeEventListener("online", this.sincronizarPendientes);
     },
     template: `
         <div class="row">
@@ -60,31 +129,31 @@
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">CODIGO</div>
                                 <div class="col-9 col-md-4">
-                                    <input required v-model="codigo" type="text" name="txtCodigoAlumno" id="txtCodigoAlumno" class="form-control">
+                                    <input required v-model="alumno.codigo" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">NOMBRE</div>
                                 <div class="col-9 col-md-6">
-                                    <input required pattern="[A-Za-zñÑáéíóú ]{3,150}" v-model="nombre" type="text" name="txtNombreAlumno" id="txtNombreAlumno" class="form-control">
+                                    <input required pattern="[A-Za-zñÑáéíóú ]{3,150}" v-model="alumno.nombre" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">DIRECCION</div>
                                 <div class="col-9 col-md-8">
-                                    <input required v-model="direccion" type="text" name="txtDireccionAlumno" id="txtDireccionAlumno" class="form-control">
+                                    <input required v-model="alumno.direccion" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">TELEFONO</div>
                                 <div class="col-9 col-md-4">
-                                    <input v-model="telefono" type="text" name="txtTelefonoAlumno" id="txtTelefonoAlumno" class="form-control">
+                                    <input v-model="alumno.telefono" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">EMAIL</div>
                                 <div class="col-9 col-md-6">
-                                    <input v-model="email" type="text" name="txtEmailAlumno" id="txtEmailAlumno" class="form-control">
+                                    <input v-model="alumno.email" type="text" class="form-control">
                                 </div>
                             </div>
                         </div>

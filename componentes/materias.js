@@ -1,15 +1,16 @@
-    
- const materia = {
+const materia = {
     props: ['forms'],
     data() {
         return {
             accion: 'nuevo',
             materias: [],
-            idMateria: '',
-            codigo: '',
-            nombre: '',
-            uv: '',
-        }
+            materia: {
+                codigo: '',
+                nombre: '',
+                uv: '',
+                codigo_transaccion: uuidv4()
+            },
+        };
     },
     methods: {
         buscarMateria() {
@@ -18,31 +19,90 @@
         },
         modificarMateria(materia) {
             this.accion = 'modificar';
-            this.idMateria = materia.idMateria;
-            this.codigo = materia.codigo;
-            this.nombre = materia.nombre;
-            this.uv = materia.uv;
+            this.materia = { ...materia };
         },
         guardarMateria() {
-            let materia = {
-                codigo: this.codigo,
-                nombre: this.nombre,
-                uv: this.uv
-            };
-            if (this.accion == 'modificar') {
-                materia.idMateria = this.idMateria;
+            let materia = { ...this.materia };
+
+            if (!navigator.onLine) {
+                db.materias.put(materia)
+                    .then(() => {
+                        this.guardarEnPendientes(materia);
+                        alertify.warning("No hay internet. Los datos se guardaron localmente.");
+                    })
+                    .catch(error => console.error("Error al guardar en IndexedDB:", error));
+                this.nuevoMateria();
+                return;
             }
+
             db.materias.put(materia);
-            this.nuevoMateria();
-            this.listarMaterias();
+            fetch(`private/modulos/materias/materia.php?accion=${this.accion}&materias=${JSON.stringify(materia)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== true) {
+                        alertify.error(data);
+                    } else {
+                        this.nuevoMateria();
+                        this.$emit('buscar');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al enviar a la nube:", error);
+                    this.guardarEnPendientes(materia);
+                    alertify.warning("Error en la conexión. Datos guardados localmente.");
+                });
         },
+
+        guardarEnPendientes(materia) {
+            let pendientes = JSON.parse(localStorage.getItem('pendientes_materias')) || [];
+            let existe = pendientes.some(p => p.codigo_transaccion === materia.codigo_transaccion);
+
+            if (!existe) {
+                pendientes.push(materia);
+                localStorage.setItem('pendientes_materias', JSON.stringify(pendientes));
+                console.log("Materia guardada en pendientes:", materia);
+            }
+        },
+
+        sincronizarPendientes() {
+            let pendientes = JSON.parse(localStorage.getItem('pendientes_materias')) || [];
+            if (pendientes.length === 0) return;
+
+            console.log("Intentando sincronizar materias pendientes...");
+
+            pendientes.forEach((materia, index) => {
+                fetch(`private/modulos/materias/materia.php?accion=nuevo&materias=${JSON.stringify(materia)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data === true) {
+                            console.log("Materia sincronizada con éxito:", materia);
+                            pendientes.splice(index, 1);
+                            localStorage.setItem('pendientes_materias', JSON.stringify(pendientes));
+                        } else {
+                            console.error("Error en sincronización:", data);
+                        }
+                    })
+                    .catch(error => console.error("Error al sincronizar:", error));
+            });
+        },
+
         nuevoMateria() {
             this.accion = 'nuevo';
-            this.idMateria = '';
-            this.codigo = '';
-            this.nombre = '';
-            this.uv = '';
+            this.materia = {
+                codigo: '',
+                nombre: '',
+                uv: '',
+                codigo_transaccion: uuidv4()
+            };
         }
+    },
+    mounted() {
+        // 🔹 Detectar cuando vuelve el internet y sincronizar pendientes
+        window.addEventListener("online", this.sincronizarPendientes);
+    },
+    beforeUnmount() {
+        // 🔹 Eliminar el evento cuando el componente se destruye
+        window.removeEventListener("online", this.sincronizarPendientes);
     },
     template: `
         <div class="row">
@@ -54,25 +114,25 @@
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">CODIGO</div>
                                 <div class="col-9 col-md-4">
-                                    <input required v-model="codigo" type="text" name="txtCodigoMateria" id="txtCodigoMateria" class="form-control">
+                                    <input required v-model="materia.codigo" type="text" name="txtCodigoMateria" id="txtCodigoMateria" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">NOMBRE</div>
                                 <div class="col-9 col-md-6">
-                                    <input required pattern="[A-Za-zñÑáéíóú ]{3,150}" v-model="nombre" type="text" name="txtNombreMateria" id="txtNombreMateria" class="form-control">
+                                    <input required pattern="[A-Za-zñÑáéíóú ]{3,150}" v-model="materia.nombre" type="text" name="txtNombreMateria" id="txtNombreMateria" class="form-control">
                                 </div>
                             </div>
                             <div class="row p-1">
                                 <div class="col-3 col-md-2">UV</div>
                                 <div class="col-9 col-md-8">
-                                    <input required v-model="uv" type="text" name="txtUVMateria" id="txtUVMateria" class="form-control">
+                                    <input required v-model="materia.uv" type="number" name="txtUVMateria" id="txtUVMateria" class="form-control">
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer bg-dark text-center">
                             <input type="submit" value="Guardar" class="btn btn-primary m-1"> 
-                            <input type="reset" value="Nuevo" class="btn btn-warning m-1">
+                            <input type="reset" value="Nuevo" class="btn btn-warning m-1"> 
                             <input type="button" @click="buscarMateria" value="Buscar" class="btn btn-info m-1">
                         </div>
                     </div>

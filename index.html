@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi primera aplicación con HTML + CSS + JS</title>
+    <title>Mi primera aplicacion con HTML + CSS + JS</title>
+    <!-- CSS -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css" />
     <!-- Default theme -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css" />
@@ -16,7 +17,7 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" ref="app">
         <div class="container-fluid">
             <nav class="navbar navbar-expand-lg bg-body-tertiary">
                 <div class="container-fluid">
@@ -38,42 +39,28 @@
                             <li class="nav-item">
                                 <a class="nav-link" @click="abrirFormulario('docente')" href="#">Docente</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" @click="abrirFormulario('matricula')" href="#">Matrícula</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" @click="abrirFormulario('inscripcion')" href="#">Inscripción</a>
-                            </li>
                         </ul>
-                    </div>
+                    </div> 
                 </div>
             </nav>
+            <hr class="border border-dark position-relative" style="top: -13px;">
         </div>
-
         <div class="container-fluid" id="appSistema">
-            <alumno v-show="forms.alumno.mostrar" :forms="forms" ref="alumno"@buscar="buscar('buscaralumno', 'listarAlumnos')"></alumno>
+            <alumno v-show="forms.alumno.mostrar" :forms="forms" ref="alumno" @buscar="buscar('buscaralumno', 'listarAlumnos')"></alumno>
             <buscaralumno v-show="forms.buscarAlumno.mostrar" ref="buscaralumno" @modificar="modificar('alumno', 'modificarAlumno', $event)"></buscaralumno>
-            <materia v-show="forms.materia.mostrar" :forms="forms" ref="materia"@buscar="buscar('buscarmateria', 'listarMaterias')"></materia>
+            <materia v-show="forms.materia.mostrar" :forms="forms" ref="materia" @buscar="buscar('buscarmateria', 'listarMaterias')"></materia>
             <buscarmateria v-show="forms.buscarMateria.mostrar" ref="buscarmateria" @modificar="modificar('materia', 'modificarMateria', $event)"></buscarmateria>
-            <matricula v-show="forms.matricula.mostrar" :forms="forms" ref="matricula"@buscar="buscar('buscarmatricula', 'listarMatricula')"></matricula>
-            <buscarmatricula v-show="forms.buscarMatricula.mostrar" ref="buscarmatricula" @modificar="modificar('matricula', 'modificarMatricula', $event)"></buscarmatricula>
-            <inscripcion v-show="forms.inscripcion.mostrar" :forms="forms" ref="inscripcion"@buscar="buscar('buscarinscripcion', 'listarInscripcion')"></inscripcion>
-            <buscarinscripcion v-show="forms.buscarInscripcion.mostrar" ref="buscarinscripcion" @modificar="modificar('inscripcion', 'modificarInscripcion', $event)"></buscarinscripcion>
         </div>
     </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.2.0/uuid.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="componentes/alumnos.js"></script>
     <script src="componentes/busqueda_alumnos.js"></script>
-    <script src="componentes/materias.js"></script>
+    <script src="componentes/alumnos.js"></script>
     <script src="componentes/busqueda_materias.js"></script>
-    <script src="componentes/matriculas.js"></script>
-    <script src="componentes/busqueda_matriculas.js"></script>
-    <script src="componentes/inscripciones.js"></script>
-    <script src="componentes/busqueda_inscripciones.js"></script>
+    <script src="componentes/materias.js"></script>
     <script src="main.js"></script>
 </body>
 
