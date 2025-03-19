@@ -1,31 +1,24 @@
-const { createApp, ref } = Vue;
+const {createApp, ref} = Vue;
+const {v4: uuidv4} = uuid;
 const Dexie = window.Dexie,
-    db = new Dexie('db_academico'); 
+    db = new Dexie('db_academico');
 
 const app = createApp({
     components: {
         alumno,
-        buscaralumno,
         materia,
-        buscarmateria,
-        matricula,
-        buscarmatricula,
-        inscripcion,
-        buscarinscripcion,
+        buscaralumno,
+        buscarmateria
     },
     data() {
         return {
-            forms: {
-                alumno: { mostrar: false },
+            forms : {
+                alumno: {mostrar: false},
                 buscarAlumno: {mostrar: false},
-                materia: { mostrar: false },
+                materia: {mostrar: false},
                 buscarMateria: {mostrar: false},
-                docente: { mostrar: false },
-                matricula: { mostrar: false },
-                buscarMatricula: {mostrar: false},
-                inscripcion: { mostrar: false },
-                buscarInscripcion: { mostrar: false},
-            }
+                matricula: {mostrar: false},
+            },
         };
     },
     methods: {
@@ -41,12 +34,9 @@ const app = createApp({
     },
     created() {
         db.version(1).stores({
-            alumnos: '++idAlumno, codigo, nombre, direccion, telefono, email',
-            materias: '++idMateria, codigo, nombre, uv',
-            matriculas: '++idMatricula, nombreAlumno, fechaMatricula, periodo',
-            inscripciones:'++idInscripcion,nombreAlumno, asignatura, fechaInscripcion' 
+            alumnos: 'codigo_transaccion, codigo, nombre, direccion, telefono, email',
+            materias: 'codigo_transaccion, codigo, nombre, uv',
         });
     }
 });
-
 app.mount('#app');
