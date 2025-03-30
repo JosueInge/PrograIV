@@ -43,7 +43,6 @@
                     </div> 
                 </div>
             </nav>
-            <hr class="border border-dark position-relative" style="top: -13px;">
         </div>
         <div class="container-fluid" id="appSistema">
             <alumno v-show="forms.alumno.mostrar" :forms="forms" ref="alumno" @buscar="buscar('buscaralumno', 'listarAlumnos')"></alumno>
@@ -52,6 +51,7 @@
             <buscarmateria v-show="forms.buscarMateria.mostrar" ref="buscarmateria" @modificar="modificar('materia', 'modificarMateria', $event)"></buscarmateria>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.2.0/uuid.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
