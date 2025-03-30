@@ -42,6 +42,7 @@ class alumnos {
     private function administrar_alumnos(){
         global $accion;
         if($this->respuesta['msg'] == 'ok'){
+<<<<<<< HEAD
             $this->db->consultasql('INSERT INTO btacira(idDocumento, hash, data, fecha_hora) VALUES(?, ?, ?, ?)',
             $this->datos['codigo_transaccion'], $this->datos['hash'], json_encode($this->datos), date('Y-m-d H:i:s') );
             
@@ -57,6 +58,20 @@ class alumnos {
                 return $this->db->consultasql('DELETE FROM alumnos WHERE codigo_transaccion = ?', $this->datos['codigo_transaccion']);
             }else if($accion == 'consultar'){
                 $this->db->consultasql('SELECT idAlumno, codigo, nombre, direccion, telefono, email, codigo_transaccion hash FROM alumnos');
+=======
+            if($accion == 'nuevo'){
+                return $this->db->consultasql('INSERT INTO alumnos(codigo,nombre,direccion,telefono,email,codigo_transaccion) VALUES(?, ?, ?, ?, ?, ?)', 
+                    $this->datos['codigo'], $this->datos['nombre'], $this->datos['direccion'], 
+                    $this->datos['telefono'], $this->datos['email'], $this->datos['codigo_transaccion']);
+            }else if($accion == 'modificar'){
+                return $this->db->consultasql('UPDATE alumnos SET codigo=?,nombre=?,direccion=?,telefono=?,email=? WHERE codigo_transaccion = ?', 
+                $this->datos['codigo'], $this->datos['nombre'], $this->datos['direccion'], $this->datos['telefono'], 
+                    $this->datos['email'], $this->datos['codigo_transaccion']);
+            }else if($accion == 'eliminar'){
+                return $this->db->consultasql('DELETE FROM alumnos WHERE codigo_transaccion = ?', $this->datos['codigo_transaccion']);
+            }else if($accion == 'consultar'){
+                $this->db->consultasql('SELECT idAlumno, codigo, nombre, direccion, telefono, email, codigo_transaccion FROM alumnos');
+>>>>>>> 119598b64923d88337eee1c90b9715613f3fa4dd
                 return $this->db->obtener_datos();
             }
         }else{
